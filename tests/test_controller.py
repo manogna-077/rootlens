@@ -5,6 +5,7 @@ from backend.app.agent.controller import InvestigationController
 from backend.app.agent.hypotheses import Hypothesis, HypothesisStatus
 from backend.app.agent.planner import AgentAction
 from backend.app.agent.state import InvestigationState, InvestigationStatus
+from backend.app.agent.evaluator_bridge import bridge_evidence_evaluator
 from backend.tools.executor import ToolExecutor as RealToolExecutor
 from backend.tools.registry import ToolResult, ToolRegistry
 
@@ -250,3 +251,47 @@ def test_controller_calls_injected_evidence_evaluator():
 
     assert len(evaluator_called) == 1
     assert evaluator_called[0] == ("fetch_logs", 1)
+
+
+def test_evidence_evaluator_bridge_integration():
+    controller = InvestigationController()
+    real_executor = RealToolExecutor()
+
+    state = InvestigationState(
+        incident={"service": "api_gateway"},
+        missing_evidence=["deployments", "logs"],
+    )
+
+    hypotheses = [
+        Hypothesis(
+            id="hyp-dep",
+            statement="api_gateway configuration deployment changed failure",
+            status=HypothesisStatus.INVESTIGATING,
+        ),
+        Hypothesis(
+            id="hyp-db",
+            statement="database lock timeout",
+            status=HypothesisStatus.INVESTIGATING,
+        ),
+    ]
+
+    available_tools = [
+        {"name": "get_deployments", "required_params": ["service"]},
+        {"name": "search_logs", "required_params": ["service"]},
+    ]
+
+    # Run investigation passing the evaluator_bridge
+    final_state = controller.run_investigation(
+        state=state,
+        hypotheses=hypotheses,
+        available_tools=available_tools,
+        executor=real_executor,
+        evidence_evaluator=bridge_evidence_evaluator,
+        max_iterations=3,
+    )
+
+    # Verify that evidence evaluation updated hypothesis state
+    hyp_dep = next(h for h in hypotheses if h.id == "hyp-dep")
+    assert len(hyp_dep.supporting_evidence_ids) > 0 or len(hyp_dep.contradicting_evidence_ids) > 0
+    assert hyp_dep.status in (HypothesisStatus.SUPPORTED, HypothesisStatus.WEAKENED)
+    assert hyp_dep.reasoning != ""
