@@ -1,11 +1,12 @@
-import { Incident, Evidence, Hypothesis, InvestigationState, Report, AuditEvent } from '../types';
+import { Incident, Evidence, Hypothesis, InvestigationState, Report, AuditEvent, CausalGraphData } from '../types';
 import {
   mockIncidents,
   mockEvidences,
   mockHypotheses,
   mockInvestigationState,
   mockReport,
-  mockAuditEvents
+  mockAuditEvents,
+  mockCausalGraph
 } from '../data/mockData';
 
 const API_BASE_URL = '/api';
@@ -69,6 +70,10 @@ export const api = {
 
   getAudit: async (id: string): Promise<AuditEvent[]> => {
     return fetchJson(`${API_BASE_URL}/incidents/${id}/audit`, undefined, mockAuditEvents);
+  },
+
+  getGraph: async (id: string): Promise<CausalGraphData> => {
+    return fetchJson(`${API_BASE_URL}/incidents/${id}/graph`, undefined, mockCausalGraph);
   },
 
   submitApproval: async (id: string, approved: boolean, comment?: string): Promise<{ success: boolean }> => {

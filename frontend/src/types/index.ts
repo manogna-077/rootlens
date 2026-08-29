@@ -103,3 +103,30 @@ export interface Report {
 }
 
 export type ViewType = 'incident-command' | 'investigation-console' | 'final-report' | 'audit';
+
+export interface CausalNode {
+  id: string;
+  name: string;
+  entity_type: 'service' | 'event' | 'hypothesis' | 'evidence' | 'concept';
+  metadata?: Record<string, unknown>;
+}
+
+export type CausalRelationshipType =
+  | 'PRECEDES'
+  | 'CORRELATES_WITH'
+  | 'SUPPORTS'
+  | 'CONTRIBUTES_TO'
+  | 'CAUSES';
+
+export interface CausalEdge {
+  source_id: string;
+  target_id: string;
+  relationship: CausalRelationshipType;
+  evidence_ids: string[];
+  metadata?: Record<string, unknown>;
+}
+
+export interface CausalGraphData {
+  nodes: CausalNode[];
+  edges: CausalEdge[];
+}

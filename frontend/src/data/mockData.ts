@@ -1,4 +1,4 @@
-import { Incident, InvestigationState, Evidence, Hypothesis, Report, AuditEvent, AgentAction, ToolResult } from '../types';
+import { Incident, InvestigationState, Evidence, Hypothesis, Report, AuditEvent, AgentAction, ToolResult, CausalGraphData } from '../types';
 
 export interface HypothesisChange {
   hypothesis_id: string;
@@ -451,4 +451,71 @@ export const mockReport: Report = {
   ],
   verification_status: 'PASS',
   human_approved: false
+};
+
+export const mockCausalGraph: CausalGraphData = {
+  nodes: [
+    {
+      id: 'deploy-v2.4.1',
+      name: 'Deployment payment-service v2.4.1',
+      entity_type: 'event',
+      metadata: { service: 'payment-service', version: 'v2.4.1' }
+    },
+    {
+      id: 'unindexed-query',
+      name: 'Unindexed Query on transactions table',
+      entity_type: 'concept',
+      metadata: { table: 'transactions', column: 'customer_id' }
+    },
+    {
+      id: 'db-conn-exhaustion',
+      name: 'PostgreSQL Pool Exhaustion (100/100)',
+      entity_type: 'event',
+      metadata: { service: 'db-primary', active_connections: 100 }
+    },
+    {
+      id: 'p99-latency-spike',
+      name: 'HTTP 504 Timeout Spike on /api/v1/charge',
+      entity_type: 'event',
+      metadata: { p99_ms: 4500, baseline_p99_ms: 220 }
+    },
+    {
+      id: 'HYP-01',
+      name: 'Hypothesis HYP-01: Unindexed query holding DB locks',
+      entity_type: 'hypothesis',
+      metadata: { status: 'CONFIRMED', score: 0.95 }
+    }
+  ],
+  edges: [
+    {
+      source_id: 'deploy-v2.4.1',
+      target_id: 'unindexed-query',
+      relationship: 'CAUSES',
+      evidence_ids: ['EVD-102']
+    },
+    {
+      source_id: 'unindexed-query',
+      target_id: 'db-conn-exhaustion',
+      relationship: 'CAUSES',
+      evidence_ids: ['EVD-103']
+    },
+    {
+      source_id: 'db-conn-exhaustion',
+      target_id: 'p99-latency-spike',
+      relationship: 'CONTRIBUTES_TO',
+      evidence_ids: ['EVD-101']
+    },
+    {
+      source_id: 'deploy-v2.4.1',
+      target_id: 'p99-latency-spike',
+      relationship: 'PRECEDES',
+      evidence_ids: ['EVD-101', 'EVD-102']
+    },
+    {
+      source_id: 'unindexed-query',
+      target_id: 'HYP-01',
+      relationship: 'SUPPORTS',
+      evidence_ids: ['EVD-101', 'EVD-102', 'EVD-103']
+    }
+  ]
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { InvestigationState } from '../types';
 import { api } from '../services/api';
 import { AgentTraceView } from './AgentTraceView';
+import { CausalGraphView } from './CausalGraphView';
 import { mockTraceSteps } from '../data/mockData';
 
 interface InvestigationConsoleViewProps {
@@ -11,7 +12,7 @@ interface InvestigationConsoleViewProps {
 export const InvestigationConsoleView: React.FC<InvestigationConsoleViewProps> = ({ incidentId }) => {
   const [state, setState] = useState<InvestigationState | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'trace' | 'hypotheses' | 'evidence' | 'missing'>('trace');
+  const [activeTab, setActiveTab] = useState<'trace' | 'hypotheses' | 'causal-graph' | 'evidence' | 'missing'>('trace');
 
   useEffect(() => {
     setLoading(true);
@@ -102,6 +103,19 @@ export const InvestigationConsoleView: React.FC<InvestigationConsoleViewProps> =
               Hypotheses ({hypotheses.length})
             </button>
             <button
+              onClick={() => setActiveTab('causal-graph')}
+              className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === 'causal-graph'
+                  ? 'border-indigo-500 text-indigo-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>Causal Graph</span>
+              <span className="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.2 rounded font-mono font-bold">
+                5 Nodes
+              </span>
+            </button>
+            <button
               onClick={() => setActiveTab('evidence')}
               className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === 'evidence'
@@ -126,6 +140,9 @@ export const InvestigationConsoleView: React.FC<InvestigationConsoleViewProps> =
           {/* Tab Content */}
           {activeTab === 'trace' && (
             <AgentTraceView traceSteps={mockTraceSteps} />
+          )}
+          {activeTab === 'causal-graph' && (
+            <CausalGraphView incidentId={incidentId} />
           )}
           {activeTab === 'hypotheses' && (
             <div className="space-y-4">
