@@ -1,0 +1,5 @@
+{
+  "id": "scenario_a",
+  "description": "Deployment regression",
+  "signal": "release \u2192 connection changes \u2192 errors"
+}
