@@ -1,0 +1,70 @@
+[
+  {
+    "id": "ev_met_001",
+    "incident_id": "scenario_a",
+    "timestamp": "2026-08-29T14:36:00Z",
+    "source": "prometheus",
+    "event_type": "metric_spike",
+    "service": "api_gateway",
+    "version": "v1.4.2",
+    "observation": "HTTP 5xx rate spiked to 15% immediately following deployment.",
+    "metadata": {
+      "metric_name": "http_requests_total",
+      "tags": {"status": "5xx"}
+    },
+    "provenance": {
+      "query": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))"
+    }
+  },
+  {
+    "id": "ev_met_002",
+    "incident_id": "scenario_b",
+    "timestamp": "2026-08-29T16:00:00Z",
+    "source": "prometheus",
+    "event_type": "metric_spike",
+    "service": "database",
+    "version": "unknown",
+    "observation": "Database CPU utilization reached 98% and active connections maxed at 500.",
+    "metadata": {
+      "metric_name": "db_cpu_utilization",
+      "tags": {"host": "db-primary"}
+    },
+    "provenance": {
+      "query": "avg(db_cpu_utilization{host=\"db-primary\"})"
+    }
+  },
+  {
+    "id": "ev_met_003",
+    "incident_id": "scenario_c",
+    "timestamp": "2026-08-29T10:10:00Z",
+    "source": "datadog",
+    "event_type": "metric_spike",
+    "service": "payment_service",
+    "version": "v1.0.5",
+    "observation": "P99 latency for external Stripe API calls increased from 200ms to 8500ms.",
+    "metadata": {
+      "metric_name": "external_api_latency",
+      "tags": {"provider": "stripe"}
+    },
+    "provenance": {
+      "dashboard_id": "ext-lat-dash"
+    }
+  },
+  {
+    "id": "ev_met_004",
+    "incident_id": "scenario_d",
+    "timestamp": "2026-08-29T15:48:00Z",
+    "source": "prometheus",
+    "event_type": "metric_spike",
+    "service": "auth_service",
+    "version": "v3.0.1",
+    "observation": "Auth service latency spiked to 2000ms. Redis cache hit rate dropped to 10%.",
+    "metadata": {
+      "metric_name": "auth_latency",
+      "tags": {"endpoint": "/verify"}
+    },
+    "provenance": {
+      "query": "histogram_quantile(0.99, rate(auth_request_duration_seconds_bucket[5m]))"
+    }
+  }
+]

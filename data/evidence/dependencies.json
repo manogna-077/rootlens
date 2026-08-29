@@ -1,0 +1,55 @@
+[
+  {
+    "id": "ev_dep_001",
+    "incident_id": "scenario_a",
+    "timestamp": "2026-08-29T14:00:00Z",
+    "source": "dependabot",
+    "event_type": "dependency_update",
+    "service": "api_gateway",
+    "version": "v1.4.2",
+    "observation": "Updated pg library from v8.7.1 to v8.8.0",
+    "metadata": {
+      "package": "pg",
+      "old_version": "8.7.1",
+      "new_version": "8.8.0"
+    },
+    "provenance": {
+      "file": "package.json"
+    }
+  },
+  {
+    "id": "ev_dep_002",
+    "incident_id": "scenario_c",
+    "timestamp": "2026-08-29T10:00:00Z",
+    "source": "statuspage",
+    "event_type": "provider_status",
+    "service": "stripe",
+    "version": "n/a",
+    "observation": "Stripe API degraded performance reported in US-East region.",
+    "metadata": {
+      "provider": "Stripe",
+      "status": "degraded"
+    },
+    "provenance": {
+      "url": "https://status.stripe.com"
+    }
+  },
+  {
+    "id": "ev_dep_003",
+    "incident_id": "scenario_d",
+    "timestamp": "2026-08-29T15:00:00Z",
+    "source": "dependabot",
+    "event_type": "dependency_update",
+    "service": "auth_service",
+    "version": "v3.0.1",
+    "observation": "Updated redis client from v4.1.0 to v4.2.0",
+    "metadata": {
+      "package": "redis",
+      "old_version": "4.1.0",
+      "new_version": "4.2.0"
+    },
+    "provenance": {
+      "file": "package.json"
+    }
+  }
+]
