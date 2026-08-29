@@ -12,3 +12,30 @@ class IncidentModel(BaseModel):
     signal: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
+
+class EvidenceModel(BaseModel):
+    id: str
+    incident_id: str
+    timestamp: str
+    source: str
+    event_type: str
+    service: str
+    version: Optional[str] = None
+    observation: str
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    provenance: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ApprovalRequest(BaseModel):
+    approved: bool
+    approver: Optional[str] = "admin"
+    comments: Optional[str] = ""
+
+
+class ApprovalResponse(BaseModel):
+    incident_id: str
+    approved: bool
+    status: str
+    message: str
+
+
