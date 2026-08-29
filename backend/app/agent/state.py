@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -26,7 +26,7 @@ class InvestigationState(BaseModel):
     actions_taken: List[Dict[str, Any]] = Field(default_factory=list)
     evidence_ids: List[str] = Field(default_factory=list)
     hypotheses: List[Dict[str, Any]] = Field(default_factory=list)
-    observations: List[Dict[str, Any]] = Field(default_factory=list)
+    observations: List[Union[Dict[str, Any], str]] = Field(default_factory=list)
     missing_evidence: List[str] = Field(default_factory=list)
     candidate_actions: List[Dict[str, Any]] = Field(default_factory=list)
     selected_action: Optional[Dict[str, Any]] = None
