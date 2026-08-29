@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { InvestigationState } from '../types';
 import { api } from '../services/api';
+import { AgentTraceView } from './AgentTraceView';
+import { mockTraceSteps } from '../data/mockData';
 
 interface InvestigationConsoleViewProps {
   incidentId: string;
@@ -9,7 +11,7 @@ interface InvestigationConsoleViewProps {
 export const InvestigationConsoleView: React.FC<InvestigationConsoleViewProps> = ({ incidentId }) => {
   const [state, setState] = useState<InvestigationState | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'hypotheses' | 'evidence' | 'missing'>('hypotheses');
+  const [activeTab, setActiveTab] = useState<'trace' | 'hypotheses' | 'evidence' | 'missing'>('trace');
 
   useEffect(() => {
     setLoading(true);
@@ -73,12 +75,25 @@ export const InvestigationConsoleView: React.FC<InvestigationConsoleViewProps> =
 
       {/* Main Console Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Columns: Tabs for Hypotheses / Evidence / Missing */}
+        {/* Left 2 Columns: Tabs for Trace / Hypotheses / Evidence / Missing */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex border-b border-slate-800 gap-2">
+          <div className="flex border-b border-slate-800 gap-2 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('trace')}
+              className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === 'trace'
+                  ? 'border-indigo-500 text-indigo-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>Agent Trace</span>
+              <span className="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.2 rounded font-mono font-bold">
+                {mockTraceSteps.length} Steps
+              </span>
+            </button>
             <button
               onClick={() => setActiveTab('hypotheses')}
-              className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors ${
+              className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === 'hypotheses'
                   ? 'border-indigo-500 text-indigo-400'
                   : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -88,7 +103,7 @@ export const InvestigationConsoleView: React.FC<InvestigationConsoleViewProps> =
             </button>
             <button
               onClick={() => setActiveTab('evidence')}
-              className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors ${
+              className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === 'evidence'
                   ? 'border-indigo-500 text-indigo-400'
                   : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -98,7 +113,7 @@ export const InvestigationConsoleView: React.FC<InvestigationConsoleViewProps> =
             </button>
             <button
               onClick={() => setActiveTab('missing')}
-              className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors ${
+              className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === 'missing'
                   ? 'border-indigo-500 text-indigo-400'
                   : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -109,6 +124,9 @@ export const InvestigationConsoleView: React.FC<InvestigationConsoleViewProps> =
           </div>
 
           {/* Tab Content */}
+          {activeTab === 'trace' && (
+            <AgentTraceView traceSteps={mockTraceSteps} />
+          )}
           {activeTab === 'hypotheses' && (
             <div className="space-y-4">
               {hypotheses.map((hyp) => (
