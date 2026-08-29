@@ -1,0 +1,74 @@
+[
+  {
+    "id": "ev_log_001",
+    "incident_id": "scenario_a",
+    "timestamp": "2026-08-29T14:35:00Z",
+    "source": "elastic",
+    "event_type": "log_error",
+    "service": "api_gateway",
+    "version": "v1.4.2",
+    "observation": "Error: Connection refused to backend_service. Max retries exceeded.",
+    "metadata": {
+      "level": "ERROR",
+      "logger": "ConnectionPool"
+    },
+    "provenance": {
+      "index": "api_gateway_logs-2026.08.29",
+      "doc_id": "log1"
+    }
+  },
+  {
+    "id": "ev_log_002",
+    "incident_id": "scenario_b",
+    "timestamp": "2026-08-29T16:05:00Z",
+    "source": "elastic",
+    "event_type": "log_error",
+    "service": "user_service",
+    "version": "v2.1.0",
+    "observation": "Timeout waiting for database connection from pool. Pool size: 50, Active: 50.",
+    "metadata": {
+      "level": "ERROR",
+      "logger": "DBClient"
+    },
+    "provenance": {
+      "index": "user_service_logs-2026.08.29",
+      "doc_id": "log2"
+    }
+  },
+  {
+    "id": "ev_log_003",
+    "incident_id": "scenario_c",
+    "timestamp": "2026-08-29T10:15:00Z",
+    "source": "elastic",
+    "event_type": "log_warning",
+    "service": "payment_service",
+    "version": "v1.0.5",
+    "observation": "External provider 'Stripe' response time exceeded 5000ms threshold.",
+    "metadata": {
+      "level": "WARN",
+      "logger": "StripeClient"
+    },
+    "provenance": {
+      "index": "payment_service_logs-2026.08.29",
+      "doc_id": "log3"
+    }
+  },
+  {
+    "id": "ev_log_004",
+    "incident_id": "scenario_d",
+    "timestamp": "2026-08-29T15:50:00Z",
+    "source": "elastic",
+    "event_type": "log_error",
+    "service": "auth_service",
+    "version": "v3.0.1",
+    "observation": "Failed to validate token. Both Cache and DB lookups failed.",
+    "metadata": {
+      "level": "ERROR",
+      "logger": "TokenValidator"
+    },
+    "provenance": {
+      "index": "auth_service_logs-2026.08.29",
+      "doc_id": "log4"
+    }
+  }
+]

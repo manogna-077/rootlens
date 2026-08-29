@@ -1,0 +1,5 @@
+{
+  "id": "scenario_b",
+  "description": "Database failure",
+  "signal": "no release \u2192 DB saturation \u2192 timeouts"
+}

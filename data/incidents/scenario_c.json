@@ -1,0 +1,5 @@
+{
+  "id": "scenario_c",
+  "description": "External dependency",
+  "signal": "provider latency starts first"
+}

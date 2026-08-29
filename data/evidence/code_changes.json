@@ -1,0 +1,56 @@
+[
+  {
+    "id": "ev_code_001",
+    "incident_id": "scenario_a",
+    "timestamp": "2026-08-29T14:20:00Z",
+    "source": "github",
+    "event_type": "pull_request",
+    "service": "api_gateway",
+    "version": "v1.4.2",
+    "observation": "PR #1024 merged: 'Update connection pool settings and timeout values.'",
+    "metadata": {
+      "pr_number": 1024,
+      "files_changed": ["src/config/pool.js"]
+    },
+    "provenance": {
+      "repo": "api_gateway",
+      "commit": "a1b2c3d4"
+    }
+  },
+  {
+    "id": "ev_code_002",
+    "incident_id": "scenario_b",
+    "timestamp": "2026-08-27T08:50:00Z",
+    "source": "github",
+    "event_type": "pull_request",
+    "service": "user_service",
+    "version": "v2.1.0",
+    "observation": "PR #899 merged: 'Add new user profile fields.' (No recent DB schema changes)",
+    "metadata": {
+      "pr_number": 899,
+      "files_changed": ["src/models/user.js"]
+    },
+    "provenance": {
+      "repo": "user_service",
+      "commit": "b2c3d4e5"
+    }
+  },
+  {
+    "id": "ev_code_003",
+    "incident_id": "scenario_d",
+    "timestamp": "2026-08-29T15:30:00Z",
+    "source": "github",
+    "event_type": "pull_request",
+    "service": "auth_service",
+    "version": "v3.0.1",
+    "observation": "PR #555 merged: 'Refactor token validation logic and update Redis client.'",
+    "metadata": {
+      "pr_number": 555,
+      "files_changed": ["src/auth/validator.js", "src/cache/redis.js"]
+    },
+    "provenance": {
+      "repo": "auth_service",
+      "commit": "d4e5f6g7"
+    }
+  }
+]
