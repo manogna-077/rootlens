@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from fastapi import FastAPI, HTTPException
-
+from datetime import datetime, timezone
 from backend.app.schemas import (
     ApprovalRequest,
     ApprovalResponse,
@@ -121,9 +121,18 @@ def run_incident_investigation(id: str) -> InvestigationState:
     initial_state = InvestigationState(
         incident=incident_data,
         goal=f"Determine root cause for incident {id}",
-        missing_evidence=["deployments", "logs", "metrics"],
+        missing_evidence=(
+            ["deployments", "logs", "metrics"]
+            if "Deployment regression" in incident_data.get("description", "")
+            else ["metrics", "logs", "deployments"]
+            if "Database failure" in incident_data.get("description", "")
+            else ["check_dependency_health", "logs"]
+            if "External dependency" in incident_data.get("description", "")
+            else ["deployments", "logs"]
+        ),
     )
 
+    # Initial default hypothesis
     # Initial default hypothesis
     initial_hypotheses = [
         Hypothesis(
@@ -258,15 +267,35 @@ def get_incident_report(id: str) -> Dict[str, Any]:
         "approval": approvals_store.get(id, {"approved": False, "status": "pending"}),
     }
 
-
 @app.get("/api/incidents/{id}/audit")
 def get_incident_audit(id: str) -> List[Dict[str, Any]]:
     _load_incident_data(id)
     if id not in investigations_store:
-        raise HTTPException(status_code=404, detail=f"No investigation found for incident '{id}'")
-    state = investigations_store[id]
-    return state.audit_events
+        raise HTTPException(
+            status_code=404,
+            detail=f"No investigation found for incident '{id}'"
+        )
 
+    events: List[Dict[str, Any]] = []
+
+    if id in investigations_store:
+        events.extend(investigations_store[id].audit_events)
+
+    if id in approvals_store:
+        approval = approvals_store[id]
+        events.append({
+            "id": f"approval-{id}",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "actor": approval.get("approver") or "admin",
+            "action": "approval_update",
+            "details": {
+                "approved": approval.get("approved"),
+                "comments": approval.get("comments"),
+                "status": approval.get("status"),
+            },
+        })
+
+    return events
 
 @app.post("/api/incidents/{id}/approval", response_model=ApprovalResponse)
 def post_incident_approval(id: str, request: ApprovalRequest) -> ApprovalResponse:
