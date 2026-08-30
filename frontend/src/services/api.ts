@@ -10,6 +10,8 @@ import {
 } from '../data/mockData';
 
 const API_BASE_URL = '/api';
+const backendIncidentId = (id: string): string =>
+  id === 'INC-2026-001' ? 'scenario_a' : id;
 
 async function fetchJson<T>(url: string, options?: RequestInit, fallback?: T): Promise<T> {
   try {
@@ -68,9 +70,13 @@ export const api = {
     return fetchJson(`${API_BASE_URL}/incidents/${id}/report`, undefined, mockReport);
   },
 
-  getAudit: async (id: string): Promise<AuditEvent[]> => {
-    return fetchJson(`${API_BASE_URL}/incidents/${id}/audit`, undefined, mockAuditEvents);
-  },
+getAudit: async (id: string): Promise<AuditEvent[]> => {
+  return fetchJson(
+    `${API_BASE_URL}/incidents/${backendIncidentId(id)}/audit`,
+    undefined,
+    mockAuditEvents
+  );
+},
 
   getGraph: async (id: string): Promise<CausalGraphData> => {
     return fetchJson(`${API_BASE_URL}/incidents/${id}/graph`, undefined, mockCausalGraph);
@@ -78,11 +84,11 @@ export const api = {
 
   submitApproval: async (id: string, approved: boolean, comment?: string): Promise<{ success: boolean }> => {
     return fetchJson(
-      `${API_BASE_URL}/incidents/${id}/approval`,
+      `${API_BASE_URL}/incidents/${backendIncidentId(id)}/approval`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ approved, comment })
+        body: JSON.stringify({ approved, comments: comment })
       },
       { success: true }
     );
