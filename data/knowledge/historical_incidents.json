@@ -1,0 +1,47 @@
+[
+  {
+    "document_id": "INC-HIST-001",
+    "title": "Post-Mortem: Connection Pool Exhaustion on API Gateway Outage",
+    "service": "api_gateway",
+    "source_type": "historical_incident",
+    "date": "2025-11-14",
+    "category": "capacity_exhaustion",
+    "content": "During peak traffic, api_gateway began throwing HTTP 504 Gateway Timeout errors. Investigation revealed that the connection pool max_connections setting of 20 was exhausted under concurrent downstream latencies. Increasing backend connection pool max limit to 100 and enabling active connection pooling immediately resolved the issue."
+  },
+  {
+    "document_id": "INC-HIST-002",
+    "title": "Post-Mortem: Third-Party Payment Gateway Rate Limit Cascade",
+    "service": "payment_service",
+    "source_type": "historical_incident",
+    "date": "2025-12-02",
+    "category": "third_party_dependency",
+    "content": "Payment processing started failing with HTTP 429 Too Many Requests from external provider PaySecure. Retries without exponential backoff amplified the traffic 5x, causing cascading job queue backlogs. Resolution involved updating circuit breaker settings and verifying active_connections and retry counters in payment_service."
+  },
+  {
+    "document_id": "INC-HIST-003",
+    "title": "Post-Mortem: Database Migration Exclusive Table Lock Outage",
+    "service": "user_service",
+    "source_type": "historical_incident",
+    "date": "2026-01-20",
+    "category": "database_migration",
+    "content": "A deployment introducing v2.1.0 executed an unindexed ALTER TABLE migration on user_db. The migration acquired an ACCESS EXCLUSIVE lock, blocking read/write connections and causing active database connections to spike to 100% saturation. Resolution required rolling back deployment v2.1.0 and adding explicit index constraints asynchronously."
+  },
+  {
+    "document_id": "INC-HIST-004",
+    "title": "Post-Mortem: Memory Leak in Order Worker Service v1.8.0",
+    "service": "order_service",
+    "source_type": "historical_incident",
+    "date": "2026-03-05",
+    "category": "memory_leak",
+    "content": "Order processing workers experienced OOMKilled crashes every 45 minutes following deployment v1.8.0. Unclosed event subscription listeners retained garbage collection roots. Memory saturation metrics continuously grew until container restarts occurred."
+  },
+  {
+    "document_id": "INC-HIST-005",
+    "title": "Post-Mortem: DNS Resolution Failure on Cloud Load Balancer",
+    "service": "auth_service",
+    "source_type": "historical_incident",
+    "date": "2025-08-30",
+    "category": "dns_infrastructure",
+    "content": "Auth service nodes failed internal health checks due to stale DNS caching on local resolv.conf after infrastructure failover. Flushing local DNS caches restored normal auth processing."
+  }
+]

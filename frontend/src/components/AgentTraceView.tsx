@@ -271,10 +271,40 @@ export const AgentTraceView: React.FC<AgentTraceViewProps> = ({ traceSteps }) =>
                       </div>
 
                       {/* Provenance */}
-                      {step.tool_result.provenance.length > 0 && (
-                        <div className="text-xs flex items-center gap-2 pt-1 border-t border-slate-900">
-                          <span className="text-slate-500">Provenance / Source:</span>
-                          <span className="font-mono text-slate-400">{step.tool_result.provenance.join(', ')}</span>
+                      {step.tool_result.provenance && step.tool_result.provenance.length > 0 && (
+                        <div className="text-xs space-y-1.5 pt-2 border-t border-slate-900">
+                          <span className="text-slate-400 font-semibold flex items-center gap-1">
+                            <span className="text-indigo-400">📚</span> RAG Knowledge Provenance:
+                          </span>
+                          <div className="space-y-1">
+                            {step.tool_result.provenance.map((prov: any, pIdx: number) => {
+                              if (typeof prov === 'object' && prov !== null && prov.document_id) {
+                                return (
+                                  <div key={pIdx} className="p-2 bg-indigo-950/30 border border-indigo-900/50 rounded font-mono text-xs text-indigo-200">
+                                    <div className="flex items-center justify-between gap-2 font-bold text-indigo-300">
+                                      <span>[{prov.source_type || 'knowledge'}] {prov.title || prov.document_id}</span>
+                                      {prov.score !== undefined && (
+                                        <span className="text-emerald-400 text-xs">Score: {prov.score}</span>
+                                      )}
+                                    </div>
+                                    <div className="text-slate-400 text-xs mt-1 not-italic">
+                                      Chunk ID: {prov.chunk_id} | Path: {prov.source_path}
+                                    </div>
+                                    {prov.snippet && (
+                                      <div className="mt-1 text-slate-300 not-italic italic bg-slate-900/80 p-1.5 rounded border border-slate-800 text-xs">
+                                        "{prov.snippet}"
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              }
+                              return (
+                                <div key={pIdx} className="font-mono text-slate-400 text-xs">
+                                  {typeof prov === 'string' ? prov : JSON.stringify(prov)}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>

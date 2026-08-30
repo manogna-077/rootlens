@@ -6,6 +6,7 @@ from backend.app.reasoning.evidence_evaluator import (
     EvidenceInput,
     HypothesisInput,
 )
+from backend.app.reasoning.disconfirmation import DisconfirmationEvaluator
 from backend.tools.registry import ToolResult
 
 
@@ -40,12 +41,23 @@ def bridge_evidence_evaluator(tool_result: ToolResult, hypotheses: List[Hypothes
         )
 
         for hyp in hypotheses:
+            # Skip observation if it explicitly belongs to a different incident
+            if isinstance(obs_dict, dict) and obs_dict.get("incident_id"):
+                obs_inc = str(obs_dict["incident_id"]).lower()
+                hyp_inc = str(hyp.id).lower()
+                if obs_inc not in hyp_inc and not hyp_inc.endswith(obs_inc):
+                    # Extract scenario/incident tag if present (e.g. hyp-scenario_a-1 vs scenario_b)
+                    parts = hyp_inc.split("-")
+                    if len(parts) >= 2 and parts[1].startswith("scenario_") and parts[1] != obs_inc:
+                        continue
+
             hyp_input = HypothesisInput(
                 id=hyp.id,
                 statement=hyp.statement,
                 disconfirming_condition=hyp.disconfirming_condition,
             )
 
+            # Evaluate direct support/contradiction
             assessment = EvidenceEvaluator.evaluate(ev_input, hyp_input)
 
             if assessment.assessment == AssessmentType.SUPPORTS:
@@ -63,3 +75,14 @@ def bridge_evidence_evaluator(tool_result: ToolResult, hypotheses: List[Hypothes
                     status=new_status,
                     reasoning=f"{hyp.reasoning}\n{assessment.reason}".strip() if hyp.reasoning else assessment.reason,
                 )
+
+            # Evaluate disconfirming condition
+            if hyp.disconfirming_condition:
+                disc_res = DisconfirmationEvaluator.evaluate(ev_input, hyp_input)
+                if disc_res.disconfirms:
+                    hyp.add_contradicting_evidence(ev_id)
+                    new_status = HypothesisStatus.WEAKENED if hyp.status in (HypothesisStatus.GENERATED, HypothesisStatus.INVESTIGATING, HypothesisStatus.SUPPORTED) else hyp.status
+                    hyp.update_assessment(
+                        status=new_status,
+                        reasoning=f"{hyp.reasoning}\n[Disconfirmation] {disc_res.reason}".strip() if hyp.reasoning else disc_res.reason,
+                    )

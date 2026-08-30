@@ -1,0 +1,34 @@
+[
+  {
+    "document_id": "RB-001",
+    "title": "Runbook: Diagnosing 504 Gateway Timeouts & Connection Pool Saturation",
+    "service": "api_gateway",
+    "source_type": "runbook",
+    "category": "troubleshooting",
+    "content": "Step 1: Check logs for 'Connection refused' or 'Connection pool exhausted' log entries.\nStep 2: Check query_metrics for active_connections or max_connection_limit.\nStep 3: If active_connections equals max limit, verify downstream dependency latencies or recent deployment code changes before initiating rollback."
+  },
+  {
+    "document_id": "RB-002",
+    "title": "Runbook: Handling Third-Party Dependency Failures & Rate Limits",
+    "service": "payment_service",
+    "source_type": "runbook",
+    "category": "troubleshooting",
+    "content": "Step 1: Inspect check_dependency_health for status degraded or HTTP 429 status codes.\nStep 2: Check query_metrics for rate_limit_quota or error_rate.\nStep 3: Verify if rate limit parameters were modified in the latest deployment or if third-party provider status page reports an incident."
+  },
+  {
+    "document_id": "RB-003",
+    "title": "Runbook: Database Lock Contention & Migration Safety",
+    "service": "user_service",
+    "source_type": "runbook",
+    "category": "troubleshooting",
+    "content": "Step 1: Compare compare_versions for database migration scripts in recent commits.\nStep 2: Query query_metrics for database_lock_wait_time and active_db_connections.\nStep 3: If lock wait time exceeds threshold (>5s), kill long-running DDL statements and roll back migration deployment."
+  },
+  {
+    "document_id": "RB-004",
+    "title": "Runbook: Memory Leak & Container OOM Diagnostic Procedure",
+    "service": "order_service",
+    "source_type": "runbook",
+    "category": "troubleshooting",
+    "content": "Step 1: Query query_metrics for process_memory_bytes over time.\nStep 2: Check compare_versions for changes in background task handling or event listeners.\nStep 3: If heap memory monotonically increases without garbage collection drops, restart deployment with memory profiling enabled."
+  }
+]
