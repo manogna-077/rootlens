@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from backend.app.agent.hypotheses import Hypothesis
+from backend.app.agent.hypotheses import Hypothesis, HypothesisStatus
 from backend.app.agent.planner import AgentAction, Planner
 from backend.app.agent.state import InvestigationState, InvestigationStatus
 from backend.app.agent.stopping import DEFAULT_MAX_ITERATIONS, evaluate_stopping_policy
@@ -125,7 +125,11 @@ class InvestigationController:
             stopping = evaluate_stopping_policy(state, max_iterations=max_iterations)
             if stopping.should_stop:
                 if state.status == InvestigationStatus.RUNNING:
-                    state.status = InvestigationStatus.COMPLETED
+                    is_conclusive = any(
+                        h.status == HypothesisStatus.CONFIRMED or len(h.supporting_evidence_ids) >= 2
+                        for h in hypotheses
+                    )
+                    state.status = InvestigationStatus.COMPLETED if is_conclusive else InvestigationStatus.INSUFFICIENT_EVIDENCE
                 break
 
             prev_iteration = state.iteration

@@ -61,7 +61,7 @@ class Verifier:
     """Deterministic, non-mutating Verifier for RootLens investigation contexts."""
 
     VALID_ASSESSMENTS = {a.value for a in AssessmentType}
-    VALID_STATUSES = {s.value for s in HypothesisStatus}
+    VALID_STATUSES = {s.value for s in HypothesisStatus} | {f"HypothesisStatus.{s.value}" for s in HypothesisStatus}
     VALID_CAUSAL_RELATIONSHIPS = {c.value for c in CausalRelationship}
 
     @classmethod

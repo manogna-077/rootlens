@@ -12,7 +12,7 @@ from backend.app.schemas import (
 )
 from backend.app.agent.controller import InvestigationController
 from backend.app.agent.evaluator_bridge import bridge_evidence_evaluator
-from backend.app.agent.hypotheses import Hypothesis, HypothesisStatus
+from backend.app.agent.hypotheses import Hypothesis, HypothesisStatus, build_initial_hypotheses
 from backend.app.agent.state import InvestigationState
 from backend.app.reasoning.verifier import Verifier, VerificationContext
 from backend.app.reasoning.evidence_score import calculate_evidence_score
@@ -57,10 +57,16 @@ def _get_incident_evidence(id: str) -> List[dict]:
         "metrics.json",
     ]
     matched_evidence = []
+    collected_ids = set()
+    if id in investigations_store:
+        collected_ids = set(investigations_store[id].evidence_ids)
+
     for filename in evidence_files:
         items = load_evidence(filename)
         for item in items:
-            if item.get("incident_id") == id:
+            ev_id = item.get("id")
+            inc_id = item.get("incident_id")
+            if (inc_id and inc_id == id) or (ev_id and ev_id in collected_ids):
                 matched_evidence.append(item)
     return matched_evidence
 
@@ -132,15 +138,8 @@ def run_incident_investigation(id: str) -> InvestigationState:
         ),
     )
 
-    # Initial default hypothesis
-    # Initial default hypothesis
-    initial_hypotheses = [
-        Hypothesis(
-            id=f"hyp-{id}-1",
-            statement=f"Investigating root cause for {incident_data.get('description', id)}",
-            status=HypothesisStatus.GENERATED,
-        )
-    ]
+    # Initial hypotheses constructed via general builder
+    initial_hypotheses = build_initial_hypotheses(incident_data)
 
     available_tools = [
         {"name": "get_deployments", "required_params": []},
@@ -148,6 +147,8 @@ def run_incident_investigation(id: str) -> InvestigationState:
         {"name": "query_metrics", "required_params": []},
         {"name": "compare_versions", "required_params": []},
         {"name": "check_dependency_health", "required_params": []},
+        {"name": "search_past_incidents", "required_params": []},
+        {"name": "search_runbooks", "required_params": []},
     ]
 
     registry = ToolRegistry()
@@ -245,15 +246,15 @@ def get_incident_report(id: str) -> Dict[str, Any]:
     disconfirmation_results = []
     for hyp in hypotheses:
         if hyp.disconfirming_condition:
-            disc_res = evaluate_disconfirmation(
-                evidence_items=evidence_items,
-                disconfirming_condition=hyp.disconfirming_condition,
-            )
-            disconfirmation_results.append({
-                "hypothesis_id": hyp.id,
-                "disconfirmed": disc_res.disconfirmed,
-                "reason": disc_res.reason,
-            })
+            for ev in evidence_items:
+                disc_res = evaluate_disconfirmation(ev, hyp)
+                if disc_res.disconfirms:
+                    disconfirmation_results.append({
+                        "hypothesis_id": hyp.id,
+                        "evidence_id": disc_res.evidence_id,
+                        "disconfirmed": True,
+                        "reason": disc_res.reason,
+                    })
 
     return {
         "incident_id": id,

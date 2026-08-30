@@ -13,16 +13,49 @@ class AgentAction(BaseModel):
     missing_evidence_addressed: List[str] = Field(default_factory=list)
 
 
+def _calculate_domain_bonus(tool_name: str, context_text: str) -> float:
+    if not context_text or not tool_name:
+        return 0.0
+    text_lower = context_text.lower()
+    tool_lower = tool_name.lower()
+    
+    DOMAIN_FAMILIES = {
+        "deploy": ["deploy", "deployment", "release", "version", "rollback"],
+        "metric": ["metric", "metrics", "saturation", "latency", "connection", "cpu", "memory", "spike", "rate_limit"],
+        "log": ["log", "logs", "error", "exception", "failure", "trace"],
+        "database": ["database", "db", "lock", "sql", "query"],
+        "dependency": ["dependency", "provider", "upstream", "external", "third_party", "health"],
+    }
+    
+    bonus = 0.0
+    for domain, keywords in DOMAIN_FAMILIES.items():
+        if domain in tool_lower or any(kw in tool_lower for kw in keywords):
+            if any(kw in text_lower for kw in keywords):
+                bonus += 0.5
+                break
+    return min(1.0, bonus)
+
+
 def calculate_diagnostic_usefulness(
     action: AgentAction,
     hypotheses: List[Hypothesis],
     missing_evidence: List[str],
+    context_text: str = "",
 ) -> float:
     score = 0.0
     hyp_dict = {h.id: h for h in hypotheses}
     
-    score += len(action.missing_evidence_addressed) * 2.0
-    
+    # Positional missing evidence priority: index 0 -> +3.0, index 1 -> +2.0, index 2 -> +1.0
+    for me in action.missing_evidence_addressed:
+        if me in missing_evidence:
+            idx = missing_evidence.index(me)
+            score += max(1.0, 3.0 - float(idx))
+        else:
+            score += 1.0
+
+    # Domain alignment bonus
+    score += _calculate_domain_bonus(action.tool, context_text)
+
     for hyp_id in action.target_hypotheses:
         hyp = hyp_dict.get(hyp_id)
         if hyp:
@@ -52,9 +85,11 @@ class Planner:
             state, hypotheses, missing_evidence, available_tools
         )
         
+        context_str = f"{state.incident.get('description', '')} {state.incident.get('signal', '')} {' '.join(h.statement for h in hypotheses)}"
+
         ranked_candidates = sorted(
             candidates,
-            key=lambda act: calculate_diagnostic_usefulness(act, hypotheses, missing_evidence),
+            key=lambda act: calculate_diagnostic_usefulness(act, hypotheses, missing_evidence, context_text=context_str),
             reverse=True,
         )
         
@@ -90,7 +125,12 @@ class Planner:
             ]
 
             args: Dict[str, Any] = {}
-            if "required_params" in tool:
+            if tool_name in ("search_past_incidents", "search_runbooks"):
+                query_str = state.incident.get("description", "") or state.goal or "incident"
+                args["query"] = query_str
+                if "service" in state.incident:
+                    args["service"] = state.incident["service"]
+            elif "required_params" in tool:
                 for param in tool["required_params"]:
                     if param in state.incident:
                         args[param] = state.incident[param]
